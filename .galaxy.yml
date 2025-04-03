@@ -1,0 +1,9 @@
+namespace: yudus
+name: ludus_tpot_server
+version: 1.0.0
+readme: README.md
+authors:
+  - TsamD
+description: Rôle Ansible pour installer T-Pot CE
+license: MIT
+tags: [ludus, tpot, honeypot]
