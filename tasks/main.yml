@@ -1,29 +1,31 @@
 ---
-# tasks file for yudus.ludus_tpot_server
-- name: Mettre à jour les paquets
-  apt:
-    update_cache: yes
-    upgrade: dist
-
-- name: Installer les dépendances nécessaires
+- name: Installer dépendances système
   apt:
     name:
-      - curl
       - git
+      - curl
       - apt-transport-https
       - ca-certificates
       - gnupg
       - lsb-release
     state: present
+    update_cache: yes
 
-- name: Télécharger le script d'installation de T-Pot
-  get_url:
-    url: https://github.com/telekom-security/tpotce/raw/master/iso/installer/install.sh
-    dest: /opt/tpot-install.sh
+- name: Cloner le dépôt T-Pot CE
+  git:
+    repo: https://github.com/telekom-security/tpotce.git
+    dest: /opt/tpotce
+    version: master
+    force: yes
+
+- name: Copier le fichier d'installation modifié (non interactif)
+  copy:
+    src: install.sh
+    dest: /opt/tpotce/iso/installer/install.sh
     mode: '0755'
 
-- name: Exécuter le script d'installation T-Pot (⚠️ interactivité)
-  command: bash /opt/tpot-install.sh
+- name: Exécuter le script d'installation T-Pot custom
+  command: bash /opt/tpotce/iso/installer/install.sh
   args:
-    creates: /opt/tpot/  # évite de relancer si déjà fait
+    creates: /opt/tpot
 
