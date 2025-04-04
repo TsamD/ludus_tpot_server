@@ -20,7 +20,9 @@ export INSTALL_MODE=STANDARD
 export INSTALL_LANGUAGE=en
 
 # Lancer le script officiel
-cd /opt/tpotce/iso/installer/
+#cd /opt/tpotce/iso/installer/
+cd /root/tpot/iso/installer/
+
 
 echo "==> Installation avec :"
 echo "  - Mode      : $INSTALL_MODE"
