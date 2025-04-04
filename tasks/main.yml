@@ -1,31 +1,62 @@
 ---
-- name: Installer dépendances système
+- name: Ensure aptitude is installed
   apt:
-    name:
-      - git
+    name: aptitude
+    state: latest
+    update_cache: true
+
+- name: Update apt and install required system packages
+  apt:
+    pkg:
       - curl
-      - apt-transport-https
-      - ca-certificates
-      - gnupg
-      - lsb-release
+      - vim
+      - git
+    state: latest
+    update_cache: true
+
+- name: Setup passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
     state: present
-    update_cache: yes
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
 
-- name: Cloner le dépôt T-Pot CE
-  git:
-    repo: https://github.com/telekom-security/tpotce.git
-    dest: /opt/tpotce
-    version: master
-    force: yes
+- name: Cloning T-Pot install directory
+  ansible.builtin.git:
+    repo: "https://github.com/telekom-security/tpotce.git"
+    dest: /root/tpot
 
-- name: Copier le fichier d'installation modifié (non interactif)
-  copy:
-    src: install.sh
-    dest: /opt/tpotce/iso/installer/install.sh
-    mode: '0755'
+- name: Copy T-Pot configuration file
+  ansible.builtin.copy:
+    src: /root/tpot/iso/installer/tpot.conf.dist
+    dest: /root/tpot.conf
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: true
 
-- name: Exécuter le script d'installation T-Pot custom
-  command: bash /opt/tpotce/iso/installer/install.sh
-  args:
-    creates: /opt/tpot
+- name: Configure T-Pot configuration file
+  ansible.builtin.lineinfile:
+    path: /root/tpot.conf
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^myCONF_TPOT_FLAVOR', line: 'myCONF_TPOT_FLAVOR={{ TPOT_FLAVOR }}' }
+    - { regexp: '^myCONF_WEB_USER', line: 'myCONF_WEB_USER={{ tpot_username }}' }
+    - { regexp: '^myCONF_WEB_PW', line: 'myCONF_WEB_PW={{ password }}' }
 
+- name: Install T-Pot on instance (15-30 minutes)
+  ansible.builtin.command: /root/tpot/iso/installer/install.sh --type=auto --conf=/root/tpot.conf
+
+- name: Disable password authentication for root
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin prohibit-password'
+
+- name: Reboot
+  ansible.builtin.reboot:
+  ignore_errors: true
