@@ -26,6 +26,8 @@
   ansible.builtin.git:
     repo: "https://github.com/telekom-security/tpotce.git"
     dest: /root/tpot
+    update: yes
+    force: "{{ tpot_git_force }}"
 
 - name: Copy T-Pot configuration file
   ansible.builtin.copy:
