@@ -31,7 +31,7 @@
 
 - name: Copy T-Pot configuration file
   ansible.builtin.copy:
-    src: /root/tpot/iso/installer/tpot.conf.dist
+    src: /root/tpot/installer/install/tpot.conf.dist
     dest: /root/tpot.conf
     owner: root
     group: root
