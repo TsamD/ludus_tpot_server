@@ -1,4 +1,4 @@
 ---
 # defaults file for yudus.ludus_tpot_server
 TPOT_FLAVOR: STANDARD
-tpot_git_force: false
+tpot_git_force: true
